@@ -11,6 +11,8 @@ screen = pygame.display.set_mode(
 pygame.display.set_caption("Solar System Simulation")
 clock = pygame.time.Clock()
 
+font = pygame.font.SysFont("Arial", 11)
+
 sun = Body("Sun", (255, 255, 0), 30, 5000, [600, 400], [0, 0])
 venus = Body("Venus", (255, 165, 0), 6, 0.8, [700, 400], [0, -2.8])
 earth = Body("Earth", (0, 0, 255), 7, 1, [770, 400], [0, -2.6])
@@ -35,11 +37,14 @@ while running:
 
     screen.fill((0,0,0))
     for body in bodies:
+        text = font.render(body.name, True, (255,255,255))
         x, y = round(body.pos[0]), round(body.pos[1])
         pygame.gfxdraw.aacircle(screen, x, y, body.radius, body.color)
         pygame.gfxdraw.filled_circle(screen, x, y, body.radius, body.color)
+        screen.blit(text, ((body.pos[0] + body.radius + 2),( body.pos[1] + body.radius + 2)))
         if len(body.pos_history) > 1:
             pygame.draw.lines(screen, body.color, False, body.pos_history, 1)
+        
 
 
     pygame.display.flip()

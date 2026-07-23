@@ -11,3 +11,5 @@ class Body():
 
     def update_history(self):
         self.pos_history.append(list(self.pos))
+        if len(self.pos_history) > 500:
+            self.pos_history.pop(0)

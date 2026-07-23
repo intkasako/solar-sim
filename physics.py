@@ -6,7 +6,7 @@ from body import Body
 def calc_delta(first_body_pos : list[float], second_body_pos : list[float]) -> tuple[float]:
     first_body_pos = np.array(first_body_pos)
     second_body_pos = np.array(second_body_pos)
-    return first_body_pos - second_body_pos
+    return second_body_pos - first_body_pos
 
 def calc_dist(delta : np.array):
     return np.sqrt(delta[0]**2 + delta[1]**2)

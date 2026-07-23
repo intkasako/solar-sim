@@ -44,7 +44,7 @@ Runs with 4 planets (Venus, Earth, Mars, Jupiter) using hand-tuned velocities.
 
 **Velocity Verlet** — a second-order integrator that calculates forces twice per step: before and after moving each body, then uses the average acceleration to update velocity. This conserves energy much better, producing stable orbits that hold their shape indefinitely.
 
-Runs with all 8 planets (Mercury through Neptune) using velocities calculated from the circular orbit formula `v = sqrt(G * M / r)`. Euler can't handle this many bodies at these distances without orbits breaking apart, which is a good demonstration of why the choice of integrator matters.
+Runs with all 8 planets (Mercury through Neptune) and an asteroid belt between Mars and Jupiter, using velocities calculated from the circular orbit formula `v = sqrt(G * M / r)`. Euler can't handle this many bodies at these distances without orbits breaking apart, which is a good demonstration of why the choice of integrator matters.
 
 ## Structure
 
@@ -62,6 +62,12 @@ constants.py   # gravitational constant
 **Fixed Sun** — the Sun has a `fixed=True` attribute that prevents its position from being updated. This simplifies the simulation without significant loss of accuracy, since in the real solar system the Sun's movement relative to the planets is negligible.
 
 **Made-up values** — masses, distances, and velocities don't correspond to the real solar system. They were tuned through trial and error (Euler) or calculated for circular orbits (Verlet) until the simulation looked visually stable and fit on screen.
+
+**Asteroid belt** — 30 small bodies distributed in a ring between Mars and Jupiter (Verlet only). Each asteroid is placed at a random angle and distance using trigonometry, with a perpendicular velocity calculated from the orbital formula. They interact gravitationally with all other bodies, which produces emergent behavior: some asteroids get flung out of their orbits by close encounters with Jupiter or Mars, then get pulled back by the Sun — the same gravitational perturbation that happens in the real solar system.
+
+## Known limitations
+
+**No moons** — satellites like the Moon can't realistically orbit a planet at this scale. The simulation compresses distances so much that the Sun's gravity dominates at every point. In reality the Moon orbits Earth because it's roughly 1/400th of the Earth-Sun distance away; in our simulation that ratio would be around 1/11, which isn't enough for Earth's gravity to hold a satellite against the Sun's pull.
 
 ## Dependencies
 

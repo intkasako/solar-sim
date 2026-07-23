@@ -3,6 +3,8 @@ import pygame.gfxdraw
 from body import Body
 from constants import G
 import physics
+import random
+import math
 
 pygame.init()
 screen = pygame.display.set_mode(
@@ -16,6 +18,21 @@ ui_font = pygame.font.SysFont("Arial", 14)
 
 SUN_POS = [600, 400]
 SUN_MASS = 5000
+
+def create_asteroid_belt(n_asteroids) -> list[Body]:
+    asteroids = []
+    v = physics.calc_orbital_velocity
+    for _ in range(n_asteroids):
+        dist = random.uniform(270, 330)
+        angle = random.uniform(0, 2 * math.pi)
+        pos_x = SUN_POS[0] + dist * math.cos(angle)
+        pos_y = SUN_POS[1] + dist * math.sin(angle)
+        vel = v(G, SUN_MASS, dist)
+        vel_x = -vel * math.sin(angle)
+        vel_y = vel * math.cos(angle)
+        radius = random.randint(1, 2)
+        asteroids.append(Body("", (150, 150, 150), radius, 0.0001, [pos_x, pos_y], [vel_x, vel_y]))
+    return asteroids
 
 def create_bodies(method="euler"):
     if method == "verlet":
@@ -40,6 +57,7 @@ def create_bodies(method="euler"):
     ]
 
 bodies = create_bodies()
+asteroids = []
 pause = False
 running = True
 speed = 1
@@ -60,6 +78,7 @@ while running:
             if event.key == pygame.K_v:
                 integrator = "verlet" if integrator == "euler" else "euler"
                 bodies = create_bodies(integrator)
+                asteroids = create_asteroid_belt(30) if integrator == "verlet" else []
         if event.type == pygame.MOUSEWHEEL:
             if event.y > 0:
                 zoom *= 1.1
@@ -67,11 +86,12 @@ while running:
                 zoom = max(0.2, zoom / 1.1)
 
     if not pause:
+        all_bodies = bodies + asteroids
         for _ in range(speed):
             if integrator == "euler":
-                physics.step_euler(G, bodies)
+                physics.step_euler(G, all_bodies)
             else:
-                physics.step_verlet(G, bodies)
+                physics.step_verlet(G, all_bodies)
             for body in bodies:
                 body.update_history()
 
@@ -91,6 +111,9 @@ while running:
         if len(body.pos_history) > 1:
             trail = [to_screen(p) for p in body.pos_history]
             pygame.draw.lines(screen, body.color, False, trail, 1)
+    for asteroid in asteroids:
+        x, y = to_screen(asteroid.pos)
+        pygame.draw.circle(screen, asteroid.color, (x, y), max(1, round(asteroid.radius * zoom)))
 
     status = "PAUSED" if pause else f"Speed: {speed}x"
     screen.blit(ui_font.render(f"{status}  |  Integrator: {integrator.upper()}", True, (255, 255, 255)), (10, 10))

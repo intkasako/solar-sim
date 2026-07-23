@@ -63,7 +63,7 @@ constants.py   # gravitational constant
 
 **Made-up values** — masses, distances, and velocities don't correspond to the real solar system. They were tuned through trial and error (Euler) or calculated for circular orbits (Verlet) until the simulation looked visually stable and fit on screen.
 
-**Asteroid belt** — 30 small bodies distributed in a ring between Mars and Jupiter (Verlet only). Each asteroid is placed at a random angle and distance using trigonometry, with a perpendicular velocity calculated from the orbital formula. They interact gravitationally with all other bodies, which produces emergent behavior: some asteroids get flung out of their orbits by close encounters with Jupiter or Mars, then get pulled back by the Sun — the same gravitational perturbation that happens in the real solar system.
+**Asteroid belt and Kuiper belt** — two rings of small bodies (Verlet only). The asteroid belt sits between Mars and Jupiter (30 bodies), and the Kuiper belt extends beyond Neptune (20 bodies). Each body is placed at a random angle and distance using trigonometry, with a perpendicular velocity calculated from the orbital formula. They interact gravitationally with all other bodies, which produces emergent behavior: some asteroids get flung out of their orbits by close encounters with larger planets, then get pulled back by the Sun — the same gravitational perturbation that happens in the real solar system.
 
 ## Known limitations
 

@@ -19,11 +19,11 @@ ui_font = pygame.font.SysFont("Arial", 14)
 SUN_POS = [600, 400]
 SUN_MASS = 5000
 
-def create_asteroid_belt(n_asteroids) -> list[Body]:
-    asteroids = []
+def create_belt(n, min_dist, max_dist, color) -> list[Body]:
+    bodies = []
     v = physics.calc_orbital_velocity
-    for _ in range(n_asteroids):
-        dist = random.uniform(270, 330)
+    for _ in range(n):
+        dist = random.uniform(min_dist, max_dist)
         angle = random.uniform(0, 2 * math.pi)
         pos_x = SUN_POS[0] + dist * math.cos(angle)
         pos_y = SUN_POS[1] + dist * math.sin(angle)
@@ -31,8 +31,8 @@ def create_asteroid_belt(n_asteroids) -> list[Body]:
         vel_x = -vel * math.sin(angle)
         vel_y = vel * math.cos(angle)
         radius = random.randint(1, 2)
-        asteroids.append(Body("", (150, 150, 150), radius, 0.0001, [pos_x, pos_y], [vel_x, vel_y]))
-    return asteroids
+        bodies.append(Body("", color, radius, 0.0001, [pos_x, pos_y], [vel_x, vel_y]))
+    return bodies
 
 def create_bodies(method="euler"):
     if method == "verlet":
@@ -78,7 +78,7 @@ while running:
             if event.key == pygame.K_v:
                 integrator = "verlet" if integrator == "euler" else "euler"
                 bodies = create_bodies(integrator)
-                asteroids = create_asteroid_belt(30) if integrator == "verlet" else []
+                asteroids = create_belt(30, 270, 330, (150, 150, 150)) + create_belt(20, 1000, 1200, (100, 130, 160)) if integrator == "verlet" else []
         if event.type == pygame.MOUSEWHEEL:
             if event.y > 0:
                 zoom *= 1.1
@@ -115,8 +115,9 @@ while running:
         x, y = to_screen(asteroid.pos)
         pygame.draw.circle(screen, asteroid.color, (x, y), max(1, round(asteroid.radius * zoom)))
 
+    fps = int(clock.get_fps())
     status = "PAUSED" if pause else f"Speed: {speed}x"
-    screen.blit(ui_font.render(f"{status}  |  Integrator: {integrator.upper()}", True, (255, 255, 255)), (10, 10))
+    screen.blit(ui_font.render(f"{status}  |  Integrator: {integrator.upper()}  |  FPS: {fps}", True, (255, 255, 255)), (10, 10))
     screen.blit(ui_font.render("SPACE: pause  |  UP: faster  |  DOWN: slower  |  V: integrator  |  SCROLL: zoom", True, (150, 150, 150)), (10, 30))
 
     pygame.display.flip()

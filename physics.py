@@ -1,7 +1,7 @@
 import numpy as np
+from body import Body
 
 #F = G * m1 * m2 / r²
-
 
 def calc_delta(first_body_pos : list[float], second_body_pos : list[float]) -> tuple[float]:
     first_body_pos = np.array(first_body_pos)
@@ -25,3 +25,8 @@ def calc_body_forces(gravity, body1, body2):
     fy = force * delta[1] / dist
     return fx, fy
 
+def update_body(body : Body, fx, fy):
+    body.velocity[0] += fx / body.mass
+    body.velocity[1] += fy / body.mass
+    body.pos[0] += body.velocity[0]
+    body.pos[1] += body.velocity[1]

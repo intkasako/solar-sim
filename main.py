@@ -14,16 +14,38 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 11)
 ui_font = pygame.font.SysFont("Arial", 14)
 
-sun = Body("Sun", (255, 255, 0), 30, 5000, [600, 400], [0, 0], fixed=True)
-venus = Body("Venus", (255, 165, 0), 6, 0.8, [700, 400], [0, -2.8])
-earth = Body("Earth", (0, 0, 255), 7, 1, [770, 400], [0, -2.6])
-mars = Body("Mars", (255, 50, 50), 5, 0.6, [850, 400], [0, -2.4])
-jupiter = Body("Jupiter", (255, 200, 150), 12, 10, [950, 400], [0, -2.1])
+SUN_POS = [600, 400]
+SUN_MASS = 5000
 
-bodies = [sun, venus, earth, mars, jupiter]
+def create_bodies(method="euler"):
+    if method == "verlet":
+        v = physics.calc_orbital_velocity
+        return [
+            Body("Sun", (255, 255, 0), 30, SUN_MASS, list(SUN_POS), [0, 0], fixed=True),
+            Body("Mercury", (180, 180, 180), 3, 0.3, [660, 400], [0, -v(G, SUN_MASS, 60)]),
+            Body("Venus", (255, 165, 0), 6, 0.8, [700, 400], [0, -v(G, SUN_MASS, 100)]),
+            Body("Earth", (0, 0, 255), 7, 1, [770, 400], [0, -v(G, SUN_MASS, 170)]),
+            Body("Mars", (255, 50, 50), 5, 0.6, [850, 400], [0, -v(G, SUN_MASS, 250)]),
+            Body("Jupiter", (255, 200, 150), 12, 10, [950, 400], [0, -v(G, SUN_MASS, 350)]),
+            Body("Saturn", (230, 210, 170), 10, 8, [1100, 400], [0, -v(G, SUN_MASS, 500)]),
+            Body("Uranus", (170, 220, 230), 8, 5, [1300, 400], [0, -v(G, SUN_MASS, 700)]),
+            Body("Neptune", (50, 50, 255), 7, 5, [1550, 400], [0, -v(G, SUN_MASS, 950)]),
+        ]
+    return [
+        Body("Sun", (255, 255, 0), 30, SUN_MASS, list(SUN_POS), [0, 0], fixed=True),
+        Body("Venus", (255, 165, 0), 6, 0.8, [700, 400], [0, -2.8]),
+        Body("Earth", (0, 0, 255), 7, 1, [770, 400], [0, -2.6]),
+        Body("Mars", (255, 50, 50), 5, 0.6, [850, 400], [0, -2.4]),
+        Body("Jupiter", (255, 200, 150), 12, 10, [950, 400], [0, -2.1]),
+    ]
+
+bodies = create_bodies()
 pause = False
 running = True
 speed = 1
+zoom = 1.0
+center = [600, 400]
+integrator = "euler"
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -35,29 +57,44 @@ while running:
                 speed += 1
             if event.key == pygame.K_DOWN:
                 speed = max(1, speed - 1)
+            if event.key == pygame.K_v:
+                integrator = "verlet" if integrator == "euler" else "euler"
+                bodies = create_bodies(integrator)
+        if event.type == pygame.MOUSEWHEEL:
+            if event.y > 0:
+                zoom *= 1.1
+            else:
+                zoom = max(0.2, zoom / 1.1)
 
     if not pause:
         for _ in range(speed):
-            for i in range(len(bodies)):
-                for j in range(i + 1, len(bodies)):
-                    fx, fy = physics.calc_body_forces(G, bodies[i], bodies[j])
-                    physics.update_body(bodies[i], fx, fy)
-                    physics.update_body(bodies[j], -fx, -fy)
-                bodies[i].update_history()
+            if integrator == "euler":
+                physics.step_euler(G, bodies)
+            else:
+                physics.step_verlet(G, bodies)
+            for body in bodies:
+                body.update_history()
+
+    def to_screen(pos):
+        sx = center[0] + (pos[0] - center[0]) * zoom
+        sy = center[1] + (pos[1] - center[1]) * zoom
+        return round(sx), round(sy)
 
     screen.fill((0,0,0))
     for body in bodies:
         text = font.render(body.name, True, (255,255,255))
-        x, y = round(body.pos[0]), round(body.pos[1])
-        pygame.gfxdraw.aacircle(screen, x, y, body.radius, body.color)
-        pygame.gfxdraw.filled_circle(screen, x, y, body.radius, body.color)
-        screen.blit(text, ((body.pos[0] + body.radius + 2),( body.pos[1] + body.radius + 2)))
+        x, y = to_screen(body.pos)
+        r = max(2, round(body.radius * zoom))
+        pygame.gfxdraw.aacircle(screen, x, y, r, body.color)
+        pygame.gfxdraw.filled_circle(screen, x, y, r, body.color)
+        screen.blit(text, (x + r + 2, y - 5))
         if len(body.pos_history) > 1:
-            pygame.draw.lines(screen, body.color, False, body.pos_history, 1)
+            trail = [to_screen(p) for p in body.pos_history]
+            pygame.draw.lines(screen, body.color, False, trail, 1)
 
     status = "PAUSED" if pause else f"Speed: {speed}x"
-    screen.blit(ui_font.render(status, True, (255, 255, 255)), (10, 10))
-    screen.blit(ui_font.render("SPACE: pause  |  UP: faster  |  DOWN: slower", True, (150, 150, 150)), (10, 30))
+    screen.blit(ui_font.render(f"{status}  |  Integrator: {integrator.upper()}", True, (255, 255, 255)), (10, 10))
+    screen.blit(ui_font.render("SPACE: pause  |  UP: faster  |  DOWN: slower  |  V: integrator  |  SCROLL: zoom", True, (150, 150, 150)), (10, 30))
 
     pygame.display.flip()
     clock.tick(60)

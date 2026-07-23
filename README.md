@@ -18,6 +18,8 @@ python main.py
 | SPACE | Pause / Resume |
 | UP | Speed up simulation |
 | DOWN | Slow down simulation |
+| V | Toggle integrator (Euler / Verlet) |
+| SCROLL | Zoom in / out |
 
 ## How it works
 
@@ -28,6 +30,21 @@ Each frame follows three steps:
 3. Draw everything on screen
 
 Gravitational interaction is calculated pairwise: with N bodies, that's N*(N-1)/2 pairs per frame. Each pair produces a force applied to both bodies in opposite directions (Newton's third law).
+
+## Integrators
+
+The simulation supports two numerical integrators, switchable at runtime with the V key:
+
+**Euler** — the simplest integrator. Updates velocity then position in one step. Works fine for visualization but doesn't conserve energy, which causes two visible artifacts:
+
+- Orbits precess over time (the ellipse slowly rotates around the Sun)
+- Orbits can gradually expand in long-running simulations
+
+Runs with 4 planets (Venus, Earth, Mars, Jupiter) using hand-tuned velocities.
+
+**Velocity Verlet** — a second-order integrator that calculates forces twice per step: before and after moving each body, then uses the average acceleration to update velocity. This conserves energy much better, producing stable orbits that hold their shape indefinitely.
+
+Runs with all 8 planets (Mercury through Neptune) using velocities calculated from the circular orbit formula `v = sqrt(G * M / r)`. Euler can't handle this many bodies at these distances without orbits breaking apart, which is a good demonstration of why the choice of integrator matters.
 
 ## Structure
 
@@ -44,14 +61,7 @@ constants.py   # gravitational constant
 
 **Fixed Sun** — the Sun has a `fixed=True` attribute that prevents its position from being updated. This simplifies the simulation without significant loss of accuracy, since in the real solar system the Sun's movement relative to the planets is negligible.
 
-**Euler integration** — the simulation uses Euler's method to update positions: `vel += force/mass`, then `pos += vel`. It's the simplest integrator there is. It works fine for visualization, but has two visible side effects:
-
-- Orbits precess over time (the ellipse slowly rotates around the Sun)
-- Orbits can gradually expand in long-running simulations
-
-These effects are numerical error, not real physics. An integrator like Velocity Verlet would fix this by conserving energy better.
-
-**Made-up values** — masses, distances, and velocities don't correspond to the real solar system. They were tuned through trial and error until the orbits looked visually stable and fit on screen.
+**Made-up values** — masses, distances, and velocities don't correspond to the real solar system. They were tuned through trial and error (Euler) or calculated for circular orbits (Verlet) until the simulation looked visually stable and fit on screen.
 
 ## Dependencies
 

@@ -7,4 +7,7 @@ class Body():
         self.mass = mass
         self.pos = pos
         self.velocity = velocity
+        self.pos_history = []
 
+    def update_history(self):
+        self.pos_history.append(list(self.pos))

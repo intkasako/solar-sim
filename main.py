@@ -56,14 +56,14 @@ def create_bodies(method="euler"):
         Body("Jupiter", (255, 200, 150), 12, 10, [950, 400], [0, -2.1]),
     ]
 
-bodies = create_bodies()
-asteroids = []
+integrator = "verlet"
+bodies = create_bodies(integrator)
+asteroids = create_belt(30, 270, 330, (150, 150, 150)) + create_belt(20, 1000, 1200, (100, 130, 160))
 pause = False
 running = True
 speed = 1
 zoom = 1.0
 center = [600, 400]
-integrator = "euler"
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

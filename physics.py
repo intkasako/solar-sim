@@ -26,6 +26,8 @@ def calc_body_forces(gravity, body1, body2):
     return fx, fy
 
 def update_body(body : Body, fx, fy):
+    if body.fixed:
+        return
     body.velocity[0] += fx / body.mass
     body.velocity[1] += fy / body.mass
     body.pos[0] += body.velocity[0]

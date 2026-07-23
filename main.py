@@ -14,7 +14,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 11)
 ui_font = pygame.font.SysFont("Arial", 14)
 
-sun = Body("Sun", (255, 255, 0), 30, 5000, [600, 400], [0, 0])
+sun = Body("Sun", (255, 255, 0), 30, 5000, [600, 400], [0, 0], fixed=True)
 venus = Body("Venus", (255, 165, 0), 6, 0.8, [700, 400], [0, -2.8])
 earth = Body("Earth", (0, 0, 255), 7, 1, [770, 400], [0, -2.6])
 mars = Body("Mars", (255, 50, 50), 5, 0.6, [850, 400], [0, -2.4])
@@ -44,7 +44,6 @@ while running:
                     physics.update_body(bodies[i], fx, fy)
                     physics.update_body(bodies[j], -fx, -fy)
                 bodies[i].update_history()
-            sun.pos = [600, 400]
 
     screen.fill((0,0,0))
     for body in bodies:

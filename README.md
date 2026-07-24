@@ -4,6 +4,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.12+-blue) ![Pygame](https://img.shields.io/badge/Pygame--CE-2.x-green)
 
+![Demo](demo.gif)
+
 ## How to run
 
 ```bash

@@ -5,6 +5,7 @@ from constants import G
 import physics
 import random
 import math
+from PIL import Image
 
 pygame.init()
 screen = pygame.display.set_mode(
@@ -64,6 +65,8 @@ running = True
 speed = 1
 zoom = 1.0
 center = [600, 400]
+recording = False
+frames = []
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -75,6 +78,14 @@ while running:
                 speed += 1
             if event.key == pygame.K_DOWN:
                 speed = max(1, speed - 1)
+            if event.key == pygame.K_g:
+                if not recording:
+                    recording = True
+                    frames = []
+                else:
+                    recording = False
+                    if frames:
+                        frames[0].save("demo.gif", save_all=True, append_images=frames[1:], duration=33, loop=0)
             if event.key == pygame.K_v:
                 integrator = "verlet" if integrator == "euler" else "euler"
                 bodies = create_bodies(integrator)
@@ -116,9 +127,17 @@ while running:
         pygame.draw.circle(screen, asteroid.color, (x, y), max(1, round(asteroid.radius * zoom)))
 
     fps = int(clock.get_fps())
+    rec_text = "  |  REC" if recording else ""
     status = "PAUSED" if pause else f"Speed: {speed}x"
-    screen.blit(ui_font.render(f"{status}  |  Integrator: {integrator.upper()}  |  FPS: {fps}", True, (255, 255, 255)), (10, 10))
-    screen.blit(ui_font.render("SPACE: pause  |  UP: faster  |  DOWN: slower  |  V: integrator  |  SCROLL: zoom", True, (150, 150, 150)), (10, 30))
+    screen.blit(ui_font.render(f"{status}  |  Integrator: {integrator.upper()}  |  FPS: {fps}{rec_text}", True, (255, 255, 255)), (10, 10))
+    screen.blit(ui_font.render("SPACE: pause  |  UP: faster  |  DOWN: slower  |  V: integrator  |  SCROLL: zoom  |  G: record GIF", True, (150, 150, 150)), (10, 30))
+
+    screen.blit(ui_font.render("github.com/intkasako", True, (80, 80, 80)), (10, 780))
+
+    if recording:
+        raw = pygame.image.tobytes(screen, "RGB")
+        img = Image.frombytes("RGB", screen.get_size(), raw)
+        frames.append(img)
 
     pygame.display.flip()
     clock.tick(60)
